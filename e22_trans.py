@@ -7,6 +7,49 @@ TRANSFER_METHOD_BIT_NUM = 6 # 0부터 시작하는 비트 번호 (오른쪽에�
 TRANSPARENT_MODE_BIT_VALUE = 0 # 투명 전송 모드일 때 해당 비트의 값
 FIXED_POINT_MODE_BIT_VALUE = 1 # 고정점 전송 모드일 때 해당 비트의 값
 
+# e22_config.py와 동일한 매핑
+BAUD_BITS = {
+    1200: 0b000,
+    2400: 0b001,
+    4800: 0b010,
+    9600: 0b011,
+    19200: 0b100,
+    38400: 0b101,
+    57600: 0b110,
+    115200: 0b111,
+}
+
+PARITY_BITS = {
+    "8N1": 0b00,
+    "8O1": 0b01,
+    "8E1": 0b10,
+}
+
+ADR_BITS = {
+    "0.3k": 0b000,
+    "1.2k": 0b001,
+    "2.4k": 0b010,
+    "4.8k": 0b011,
+    "9.6k": 0b100,
+    "19.2k": 0b101,
+    "38.4k": 0b110,
+    "62.5k": 0b111,
+}
+
+PACKET_SIZE_BITS = {
+    240: 0b00,
+    128: 0b01,
+    64: 0b10,
+    32: 0b11,
+}
+
+POWER_BITS = {
+    22: 0b00,
+    17: 0b01,
+    13: 0b10,
+    10: 0b11,
+}
+
 def set_transfer_mode_transparent(port, baudrate, save_mode=True, target_reg3_value=None):
     """
     LoRa 모듈을 투명 전송 모드로 설정합니다.
