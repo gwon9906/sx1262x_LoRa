@@ -18,6 +18,7 @@ def set_mode(mode):
         sys.exit(1)
 
     GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
     GPIO.setup(M0_PIN, GPIO.OUT)
     GPIO.setup(M1_PIN, GPIO.OUT)
 

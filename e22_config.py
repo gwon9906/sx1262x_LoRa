@@ -218,7 +218,7 @@ def rssi_log_loop(port, baudrate, interval, csv_path):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="E22 설정 전송 + 채널 포함")
-    parser.add_argument("--addr", type=lambda x: int(x, 16), default=0x0000)
+    parser.add_argument("--addr", type=lambda x: int(x, 16), default=0x0000, action="store_true")
     parser.add_argument("--netid", type=lambda x: int(x, 16), default=0x00)
     parser.add_argument("--baud", type=int, choices=BAUD_BITS.keys(), default=9600)
     parser.add_argument("--parity", type=str, choices=PARITY_BITS.keys(), default="8N1")
@@ -229,9 +229,9 @@ if __name__ == "__main__":
     parser.add_argument("--transparent", action="store_true", help="투명 전송 모드 (기본값)")
     parser.add_argument("--fixed", action="store_true", help="고정점 전송 모드")
     parser.add_argument("--port", type=str, default="/dev/ttyAMA0")
-    parser.add_argument("--rate", type=int, default=9600)
     parser.add_argument("--mode", type=str, choices=["save", "temp", "wireless"], default="save")
     parser.add_argument("--verify", action="store_true")
+    parser.add_argument("--rssi-out", type=bool, default="False")
     parser.add_argument("--rssi-log", action="store_true",
                         help="RSSI 로깅 모드 (다른 설정 단계 건너뜀)")
     parser.add_argument("--interval", type=float, default=1.0,
@@ -250,7 +250,7 @@ if __name__ == "__main__":
     )
 
     if args.rssi_log:
-        rssi_log_loop(args.port, args.rate, args.interval, args.csv)
+        rssi_log_loop(args.port, args.baud, args.interval, args.csv)
         sys.exit(0)
 
     # 레지스터 빌드
@@ -260,7 +260,12 @@ if __name__ == "__main__":
     
     # 전송 모드: --fixed 옵션이 있으면 고정점 모드, 없으면 투명 모드
     transparent_mode = not args.fixed
-    reg3 = build_reg3(transparent_mode=transparent_mode, rssi_output=False, relay=False, lbt=False)
+
+    rssi_output = False
+    if args.rssi_out:
+        rssi_output = True
+
+    reg3 = build_reg3(transparent_mode=transparent_mode, rssi_output=rssi_output, relay=False, lbt=False)
     
     addr_high = (args.addr >> 8) & 0xFF
     addr_low = args.addr & 0xFF
@@ -272,8 +277,8 @@ if __name__ == "__main__":
     print(f"  REG3 = 0x{reg3:02X} (전송모드: {'투명' if transparent_mode else '고정점'})")
     print(f"  주소 = 0x{args.addr:04X}, 네트워크 = 0x{args.netid:02X}")
     
-    send_config(args.mode, addr_high, addr_low, args.netid, reg0, reg1, reg2, reg3, args.port, args.rate)
+    send_config(args.mode, addr_high, addr_low, args.netid, reg0, reg1, reg2, reg3, args.port, args.baud)
 
     if args.verify:
-        read_config(args.port, args.rate)
+        read_config(args.port, args.baud)
     
