@@ -218,7 +218,8 @@ def rssi_log_loop(port, baudrate, interval, csv_path):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="E22 설정 전송 + 채널 포함")
-    parser.add_argument("--addr", type=lambda x: int(x, 16), default=0x0000, action="store_true")
+    parser.add_argument("--addr", type=lambda x: int(x, 16), default=0x0000,
+                    help="모듈 주소(16진, 예: 0x0001)")
     parser.add_argument("--netid", type=lambda x: int(x, 16), default=0x00)
     parser.add_argument("--baud", type=int, choices=BAUD_BITS.keys(), default=9600)
     parser.add_argument("--parity", type=str, choices=PARITY_BITS.keys(), default="8N1")
@@ -231,7 +232,8 @@ if __name__ == "__main__":
     parser.add_argument("--port", type=str, default="/dev/ttyAMA0")
     parser.add_argument("--mode", type=str, choices=["save", "temp", "wireless"], default="save")
     parser.add_argument("--verify", action="store_true")
-    parser.add_argument("--rssi-out", type=bool, default="False")
+    parser.add_argument("--rssi-out", action="store_true",
+                    help="REG3 Bit7: RSSI 바이트 출력 활성화")
     parser.add_argument("--rssi-log", action="store_true",
                         help="RSSI 로깅 모드 (다른 설정 단계 건너뜀)")
     parser.add_argument("--interval", type=float, default=1.0,
@@ -243,7 +245,7 @@ if __name__ == "__main__":
                         help="로그 레벨")
 
     args = parser.parse_args()
-
+    
     logging.basicConfig(
         level=getattr(logging, args.loglevel),
         format="%(asctime)s [%(levelname)s] %(message)s"
@@ -260,12 +262,17 @@ if __name__ == "__main__":
     
     # 전송 모드: --fixed 옵션이 있으면 고정점 모드, 없으면 투명 모드
     transparent_mode = not args.fixed
-
-    rssi_output = False
-    if args.rssi_out:
-        rssi_output = True
-
-    reg3 = build_reg3(transparent_mode=transparent_mode, rssi_output=rssi_output, relay=False, lbt=False)
+    
+    # RSSI 출력 여부
+    rssi_output = args.rssi_out   # ← 이 줄을 추가 또는 수정
+    
+    # REG3 생성
+    reg3 = build_reg3(
+        transparent_mode=transparent_mode,
+        rssi_output=rssi_output,
+        relay=False,
+        lbt=False
+    )
     
     addr_high = (args.addr >> 8) & 0xFF
     addr_low = args.addr & 0xFF
